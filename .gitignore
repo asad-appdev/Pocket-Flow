@@ -1,33 +1,75 @@
-# Gradle files
+# ========== Global ==========
+*.iml
+*.log
+*.swp
+*.DS_Store
+.idea/
+.vscode/
 .gradle/
 build/
-
-# Local configuration file (sdk path, etc)
 local.properties
 
-# Log/OS Files
-*.log
+# Kotlin/Java build
+*.class
+*.jar
+*.war
+*.ear
 
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.apk
-output.json
+# ========== Gradle ==========
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
 
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
+# Kotlin/Multiplatform
+*.kotlin_module
+*.konan/
+.korge/
+.kover/
 
-# Keystore files
-*.jks
-*.keystore
+# ========== Android ==========
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+/android/captures/
+/android/.idea/
+/android/.DS_Store
+/android/.cxx/
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
+# Android studio
+android/.gradle/
+android/.idea/
+android/captures/
+android/local.properties
 
-# Android Profiling
-*.hprof
+# ========== iOS ==========
+/ios/Pods/
+/ios/Podfile.lock
+/ios/Podfile
+/ios/build/
+/ios/DerivedData/
+/ios/.gradle/
+/ios/.idea/
+
+# ========== Desktop ==========
+/desktop/build/
+/desktop/.idea/
+/desktop/.gradle/
+
+# ========== Mac/Linux System Files ==========
+*.DS_Store
+*.AppleDouble
+*.LSOverride
+
+# ========== Windows System Files ==========
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ========== Backup Files ==========
+*.bak
+*.tmp
+*.temp
+*~
