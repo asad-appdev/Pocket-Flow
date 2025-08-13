@@ -1,14 +1,17 @@
 package com.xasdify.pocketflow.core.presentation
 
 import androidx.compose.runtime.Composable
+import com.xasdify.pocketflow.core.presentation.navigation.root.RootComponent
+import com.xasdify.pocketflow.core.presentation.navigation.root.RootContent
 import com.xasdify.pocketflow.core.presentation.theme.AppTheme
-import com.xasdify.pocketflow.home.presentation.HomeScreen
 
 @Composable
 
-fun App() {
+fun App(root: RootComponent) {
+    // val root = rememberRootComponent(::RootComponent)
     AppTheme {
-        HomeScreen()
+        RootContent(root)
+        // MainNavigationComponent(root)
     }
 
 }

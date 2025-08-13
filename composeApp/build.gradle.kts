@@ -61,15 +61,21 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
-
+            implementation(libs.decompose)
+            implementation(libs.decompose.extensions.compose)
+            //  implementation(libs.androidx.navigation.compose)
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
+
+
         }
         nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
         dependencies {
             ksp(libs.androidx.room.compiler)
+
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -1,6 +1,6 @@
 package com.xasdify.pocketflow.core.presentation.navigation.route
 
-sealed class BottomNavigation(val path: String) {
-    data object Home : BottomNavigation("Home_screen")
+sealed class BottomNavigation() {
+    data object Home : BottomNavigation()
 
 }
