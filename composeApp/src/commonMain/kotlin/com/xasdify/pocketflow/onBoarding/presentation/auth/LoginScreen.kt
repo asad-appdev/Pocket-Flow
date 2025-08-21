@@ -1,4 +1,4 @@
-package com.xasdify.pocketflow.transactions.presentation.expenses
+package com.xasdify.pocketflow.onBoarding.presentation.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -8,19 +8,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.xasdify.pocketflow.core.presentation.navigation.transaction.ExpenseScreenComponent
+import com.xasdify.pocketflow.core.presentation.navigation.root.AuthScreenComponent
 
 @Composable
-fun ExpenseScreen(component: ExpenseScreenComponent) {
+fun LoginScreen(component: AuthScreenComponent) {
+
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column {
-            Text("Expense Screen")
-            Text("on Back", modifier = Modifier.clickable(onClick = {
-                component.onBack()
+            Text("P")
+            Text("Login", modifier = Modifier.clickable(onClick = {
+                component.onLogin()
             }))
+
         }
     }
 }

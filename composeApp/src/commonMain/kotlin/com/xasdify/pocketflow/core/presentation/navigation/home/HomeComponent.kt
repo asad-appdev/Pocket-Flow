@@ -5,8 +5,10 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
+import com.xasdify.pocketflow.core.presentation.navigation.main.MainRoute
 
-class HomeComponent(componentContext: ComponentContext) : ComponentContext by componentContext {
+class HomeComponent(componentContext: ComponentContext, val onNavigateTo: (MainRoute) -> Unit) :
+    ComponentContext by componentContext {
 
     val navigation = StackNavigation<HomeRoute>()
 
@@ -21,7 +23,12 @@ class HomeComponent(componentContext: ComponentContext) : ComponentContext by co
 
     private fun createChild(route: HomeRoute, context: ComponentContext): HomeChild {
         return when (route) {
-            HomeRoute.DashBoard -> HomeChild.DashBoard(HomeScreenComponent(context))
+            HomeRoute.DashBoard -> HomeChild.DashBoard(
+                HomeScreenComponent(
+                    context,
+                    onNavigateTo = onNavigateTo
+                )
+            )
         }
     }
 

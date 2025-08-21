@@ -4,19 +4,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class RootRoute {
-    @Serializable
-    object Home : RootRoute()
 
     @Serializable
-    object Analytics : RootRoute()
+    object Landing : RootRoute()
 
     @Serializable
-    object Finance : RootRoute()
+    object Auth : RootRoute()
 
     @Serializable
-    object Transactions : RootRoute()
-
-    @Serializable
-    object Profile : RootRoute()
+    object Main : RootRoute()
 }
-

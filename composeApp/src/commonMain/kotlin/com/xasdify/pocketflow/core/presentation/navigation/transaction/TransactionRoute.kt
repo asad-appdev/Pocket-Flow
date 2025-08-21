@@ -11,5 +11,5 @@ sealed class TransactionRoute() {
     object Expense : TransactionRoute()
 
     @Serializable
-    object InCome : TransactionRoute()
+    object Income : TransactionRoute()
 }
