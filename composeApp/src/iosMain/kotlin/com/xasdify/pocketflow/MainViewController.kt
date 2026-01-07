@@ -6,7 +6,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.xasdify.pocketflow.core.di.initKoin
 import com.xasdify.pocketflow.core.presentation.App
-import com.xasdify.pocketflow.core.presentation.navigation.root.RootComponent
+import com.xasdify.pocketflow.ui.navigation.RootComponent
 
 fun MainViewController() = ComposeUIViewController(
     configure = {

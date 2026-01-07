@@ -5,5 +5,5 @@ import com.arkivanov.decompose.ComponentContext
 class AuthScreenComponent(val context: ComponentContext, val onLogin: () -> Unit) :
     ComponentContext by context {
 
-    private val instanceKeeper = instanceKeeper()
+    // private val instanceKeeper = instanceKeeper()
 }

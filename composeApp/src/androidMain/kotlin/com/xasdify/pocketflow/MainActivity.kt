@@ -8,19 +8,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.arkivanov.decompose.retainedComponent
 import com.xasdify.pocketflow.core.presentation.App
-import com.xasdify.pocketflow.core.presentation.navigation.main.MainComponent
 import com.xasdify.pocketflow.core.presentation.navigation.root.RootComponent
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val mainComponent = retainedComponent {
+        val root = retainedComponent {
             RootComponent(it)
         }
 
         setContent {
-            App(mainComponent)
+            App(root)
         }
     }
 }

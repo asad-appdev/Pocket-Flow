@@ -4,9 +4,7 @@ import androidx.compose.runtime.Composable
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.xasdify.pocketflow.core.presentation.navigation.main.MainContent
 import com.xasdify.pocketflow.onBoarding.presentation.auth.LoginScreen
-import com.xasdify.pocketflow.onBoarding.presentation.auth.LoginViewModel
 import com.xasdify.pocketflow.onBoarding.presentation.landing.LandingScreen
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun RootContent(root: RootComponent) {
@@ -17,8 +15,8 @@ fun RootContent(root: RootComponent) {
             }
 
             is RootChild.Auth -> {
-                val vm: LoginViewModel = koinViewModel()
-                vm.login()
+                //  val vm: LoginViewModel = koinViewModel()
+                // vm.login()
                 LoginScreen(inst.component)
             }
 

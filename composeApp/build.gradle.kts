@@ -44,14 +44,17 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.ktor.client.okhttp)
+            // debugImplementation(compose.uiTooling)
+            //ksp(libs.androidx.room.compiler)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
-            implementation(compose.ui)
+
+            implementation(libs.material.icons.extended)
+
             implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.datetime)
@@ -63,7 +66,6 @@ kotlin {
             api(libs.koin.core)
             implementation(libs.decompose)
             implementation(libs.decompose.extensions.compose)
-            //  implementation(libs.androidx.navigation.compose)
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
 
@@ -71,11 +73,6 @@ kotlin {
         }
         nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)
-        }
-        dependencies {
-            ksp(libs.androidx.room.compiler)
-
-
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -99,6 +96,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    packagingOptions {
+        resources.excludes.add("assets/PublicSuffixDatabase.list")
+    }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
@@ -109,8 +109,3 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
-
-dependencies {
-    debugImplementation(compose.uiTooling)
-}
-

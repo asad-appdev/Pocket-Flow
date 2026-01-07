@@ -10,14 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
+val Navy_Blue = Color(0XFF0D47A1)
+val Emerald_Green = Color(0XFF006E33)
 private val LightColorScheme = lightColorScheme(
-    primary = Color.Blue,
-    secondary = Color.Cyan,
+    primary = Navy_Blue,
+    secondary = Emerald_Green,
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color.Blue,
-    secondary = Color.Cyan,
+    primary = Navy_Blue,
+    secondary = Emerald_Green,
 )
 
 @Composable
