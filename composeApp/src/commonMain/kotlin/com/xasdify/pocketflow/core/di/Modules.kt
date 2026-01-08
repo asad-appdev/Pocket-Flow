@@ -26,6 +26,12 @@ expect val platformModule: Module
 val sharedModule = module {
     single { HttpClientFactory.create(get()) }
 
+    singleOf(::PresetRepositoryImpl) { bind<PresetRepository>() }
+    singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
+
+    // single<LoanRepository> { LoanRepositoryImpl(get(), get()) }
+    singleOf(::LoanRepositoryImpl) { bind<LoanRepository>() }
+
     single {
         get<DatabaseFactory>().create()
             .setDriver(BundledSQLiteDriver())
@@ -33,16 +39,12 @@ val sharedModule = module {
     }
 
 
-    single<PresetDao> { get<AppDatabase>().presetDao }
-    single<TagDao> { get<AppDatabase>().tagDao }
-    single<BackupDao> { get<AppDatabase>().backupDao } // (or backupDao() - whatever your DB exposes)
+    single<PresetDao> { get<AppDatabase>().presetDao() }
+    single<TagDao> { get<AppDatabase>().tagDao() }
+    single<BackupDao> { get<AppDatabase>().backupDao() }
 
-    single<LoanDao> { get<AppDatabase>().getLoanDao }
-    single<LoanPaymentDao> { get<AppDatabase>().getLoanPaymentDao }
+    single<LoanDao> { get<AppDatabase>().getLoanDao() }
+    single<LoanPaymentDao> { get<AppDatabase>().getLoanPaymentDao() }
 
-    singleOf(::PresetRepositoryImpl) { bind<PresetRepository>() }
-    singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
 
-    // single<LoanRepository> { LoanRepositoryImpl(get(), get()) }
-    singleOf(::LoanRepositoryImpl) { bind<LoanRepository>() }
 }
