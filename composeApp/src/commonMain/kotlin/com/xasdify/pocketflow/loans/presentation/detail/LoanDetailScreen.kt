@@ -1,6 +1,7 @@
 package com.xasdify.pocketflow.loans.presentation.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -40,15 +41,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.xasdify.pocketflow.loans.domain.model.Loan
+import com.xasdify.pocketflow.loans.data.repository.LoanRepositoryImpl
 import com.xasdify.pocketflow.loans.domain.model.LoanPayment
 import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
@@ -61,22 +64,77 @@ import com.xasdify.pocketflow.ui.theme.IncomeGreen
 import com.xasdify.pocketflow.ui.theme.IncomeGreenDark
 import com.xasdify.pocketflow.utils.formatCurrency
 import com.xasdify.pocketflow.utils.getCurrentTimeMilli
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import kotlin.time.ExperimentalTime
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun LoanDetailScreen(
     loanId: Long,
     onNavigateBack: () -> Unit = {},
-    onNavigateToAddPayment: (Long) -> Unit = {},
+    // onNavigateToAddPayment removed, handled locally
     onEditLoan: (Long) -> Unit = {},
     onDeleteLoan: (Long) -> Unit = {}
 ) {
-    // TODO: Get from ViewModel
-    val loan = getSampleLoan(loanId)
-    val payments = getSamplePayments(loanId)
+    val repository: LoanRepositoryImpl = koinInject()
+    val scope = rememberCoroutineScope()
 
-    val cardColor = if (loan.type == LoanType.TAKEN) DebtOrange else IncomeGreen
+    // Load Data
+    val loanWithPayments by repository.getLoanWithPayments(loanId).collectAsState(initial = null)
+    val loan = loanWithPayments?.loan
+    val payments = loanWithPayments?.payments ?: emptyList()
+
+    var showPaymentDialog by remember { mutableStateOf(false) }
+
+    if (loan == null) {
+        // Loading or Error State
+        Scaffold(topBar = {
+            TopAppBar(
+                title = { Text("Loading...") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                })
+        }) {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) { Text("Loading Loan Details...") }
+        }
+        return
+    }
+
+    val cardColor = if (loan.type == LoanType.TAKEN.name) DebtOrange else IncomeGreen
+
+    // Add Payment Dialog
+    if (showPaymentDialog) {
+        AddPaymentDialog(
+            loanId = loan.id,
+            remainingBalance = loan.remainingBalance,
+            onDismiss = { showPaymentDialog = false },
+            onSave = { amount, date, note ->
+                scope.launch {
+                    val payment = LoanPayment(
+                        id = 0,
+                        loanId = loan.id,
+                        amount = amount,
+                        principalPortion = amount, // Simplified, assume all principal for now
+                        interestPortion = 0.0,
+                        paymentDate = date,
+                        notes = note,
+                        createdAt = getCurrentTimeMilli()
+                    )
+                    repository.addPayment(payment)
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -106,9 +164,9 @@ fun LoanDetailScreen(
             )
         },
         floatingActionButton = {
-            if (loan.status == LoanStatus.ACTIVE) {
+            if (loan.status == LoanStatus.ACTIVE.name) {
                 FloatingActionButton(
-                    onClick = { onNavigateToAddPayment(loanId) },
+                    onClick = { showPaymentDialog = true },
                     containerColor = cardColor
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add Payment")
@@ -130,13 +188,13 @@ fun LoanDetailScreen(
                 MoneyCard(
                     modifier = Modifier.fillMaxWidth(),
                     useGradient = true,
-                    gradientColors = if (loan.type == LoanType.TAKEN)
+                    gradientColors = if (loan.type == LoanType.TAKEN.name)
                         listOf(DebtOrange, DebtOrangeDark)
                     else
                         listOf(IncomeGreen, IncomeGreenDark)
                 ) {
                     Text(
-                        text = if (loan.type == LoanType.TAKEN) "Borrowed From" else "Lent To",
+                        text = if (loan.type == LoanType.TAKEN.name) "Borrowed From" else "Lent To",
                         style = MaterialTheme.typography.titleMedium,
                         color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f)
                     )
@@ -284,7 +342,7 @@ fun LoanDetailScreen(
             }
 
             // Action Buttons
-            if (loan.status == LoanStatus.ACTIVE) {
+            if (loan.status == LoanStatus.ACTIVE.name) {
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -297,7 +355,11 @@ fun LoanDetailScreen(
                                 contentColor = ExpenseRed
                             )
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Close Loan")
                         }
@@ -322,7 +384,7 @@ fun LoanDetailScreen(
                         title = "No Payments Yet",
                         description = "Start recording payments to track your loan progress",
                         action = {
-                            Button(onClick = { onNavigateToAddPayment(loanId) }) {
+                            Button(onClick = { showPaymentDialog = true }) {
                                 Icon(Icons.Default.Add, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Add Payment")
@@ -462,56 +524,3 @@ private fun formatDate(timestamp: Long): String {
         else -> "${days / 365} years ago"
     }
 }
-
-// Sample data
-@OptIn(ExperimentalTime::class)
-private fun getSampleLoan(id: Long) = Loan(
-    id = id,
-    type = LoanType.TAKEN,
-    lenderName = "John Doe",
-    principalAmount = 5000.0,
-    interestRate = 5.0,
-    currencyCode = "USD",
-    startDate = getCurrentTimeMilli() - 30L * 24 * 60 * 60 * 1000,
-    dueDate = getCurrentTimeMilli() + 335L * 24 * 60 * 60 * 1000,
-    status = LoanStatus.ACTIVE,
-    description = "Personal loan for emergency expenses",
-    totalPaid = 1500.0,
-    remainingBalance = 3500.0,
-    createdAt = getCurrentTimeMilli(),
-    updatedAt = getCurrentTimeMilli()
-)
-
-@OptIn(ExperimentalTime::class)
-private fun getSamplePayments(loanId: Long) = listOf(
-    LoanPayment(
-        id = 1,
-        loanId = loanId,
-        amount = 500.0,
-        principalPortion = 480.0,
-        interestPortion = 20.0,
-        paymentDate = getCurrentTimeMilli() - 5L * 24 * 60 * 60 * 1000,
-        notes = "Monthly payment",
-        createdAt = getCurrentTimeMilli()
-    ),
-    LoanPayment(
-        id = 2,
-        loanId = loanId,
-        amount = 500.0,
-        principalPortion = 480.0,
-        interestPortion = 20.0,
-        paymentDate = getCurrentTimeMilli() - 35L * 24 * 60 * 60 * 1000,
-        notes = null,
-        createdAt = getCurrentTimeMilli()
-    ),
-    LoanPayment(
-        id = 3,
-        loanId = loanId,
-        amount = 500.0,
-        principalPortion = 480.0,
-        interestPortion = 20.0,
-        paymentDate = getCurrentTimeMilli() - 65L * 24 * 60 * 60 * 1000,
-        notes = "First payment",
-        createdAt = getCurrentTimeMilli()
-    )
-)

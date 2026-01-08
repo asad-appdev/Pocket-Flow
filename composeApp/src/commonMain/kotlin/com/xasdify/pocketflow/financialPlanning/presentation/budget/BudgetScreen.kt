@@ -17,11 +17,6 @@ import com.xasdify.pocketflow.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetScreen(component: BudgetScreenComponent) {
-    var showAddBudgetDialog by remember { mutableStateOf(false) }
-    var editingBudgetId by remember { mutableStateOf<Long?>(null) }
-    var editingCategory by remember { mutableStateOf("") }
-    var editingAmount by remember { mutableStateOf("") }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -38,7 +33,7 @@ fun BudgetScreen(component: BudgetScreenComponent) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddBudgetDialog = true },
+                onClick = { component.onAddBudgetClicked() },
                 containerColor = BudgetBlue
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Budget")
@@ -54,6 +49,9 @@ fun BudgetScreen(component: BudgetScreenComponent) {
         ) {
             item { Spacer(modifier = Modifier.height(8.dp)) }
 
+            // Monthly Budget Overview and Stats...
+            // (Keeping existing UI structure for Overview and Stats)
+            
             // Monthly Budget Overview
             item {
                 MoneyCard(
@@ -166,25 +164,6 @@ fun BudgetScreen(component: BudgetScreenComponent) {
 
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
-    }
-
-    // Add/Edit Budget Dialog
-    if (showAddBudgetDialog || editingBudgetId != null) {
-        AddEditBudgetDialog(
-            budgetId = editingBudgetId,
-            initialCategory = editingCategory,
-            initialAmount = editingAmount,
-            onDismiss = {
-                showAddBudgetDialog = false
-                editingBudgetId = null
-                editingCategory = ""
-                editingAmount = ""
-            },
-            onSave = { category, amount ->
-                // TODO: Save to database via ViewModel
-                println("Saving budget: $category = $$amount")
-            }
-        )
     }
 }
 

@@ -1,7 +1,8 @@
-package com.xasdify.pocketflow.core.data.database
+package com.xasdify.pocketflow.data.local
 
 import androidx.room.RoomDatabaseConstructor
 
+@Suppress(names = ["NO_ACTUAL_FOR_EXPECT"])
 actual object AppDatabaseConstructor :
     RoomDatabaseConstructor<AppDatabase> {
     actual override fun initialize(): AppDatabase {

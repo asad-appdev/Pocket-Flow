@@ -2,6 +2,7 @@ package com.xasdify.pocketflow.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -11,7 +12,8 @@ import androidx.room.PrimaryKey
         parentColumns = ["id"],
         childColumns = ["loanId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [Index(value = ["loanId"])]
 )
 data class LoanPaymentEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

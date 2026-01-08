@@ -4,20 +4,18 @@ import com.xasdify.pocketflow.data.local.entity.LoanEntity
 import com.xasdify.pocketflow.data.local.entity.LoanPaymentEntity
 import com.xasdify.pocketflow.loans.domain.model.Loan
 import com.xasdify.pocketflow.loans.domain.model.LoanPayment
-import com.xasdify.pocketflow.loans.domain.model.LoanStatus
-import com.xasdify.pocketflow.loans.domain.model.LoanType
 
 fun LoanEntity.toDomain(totalPaid: Double = 0.0): Loan {
     return Loan(
         id = id,
-        type = LoanType.valueOf(type),
+        type = type,
         lenderName = lenderName,
         principalAmount = principalAmount,
         interestRate = interestRate,
         currencyCode = currencyCode,
         startDate = startDate,
         dueDate = dueDate,
-        status = LoanStatus.valueOf(status),
+        status = status,
         description = description,
         totalPaid = totalPaid,
         remainingBalance = (principalAmount - totalPaid).coerceAtLeast(0.0),
@@ -29,14 +27,14 @@ fun LoanEntity.toDomain(totalPaid: Double = 0.0): Loan {
 fun Loan.toEntity(): LoanEntity {
     return LoanEntity(
         id = id,
-        type = type.name,
+        type = type,
         lenderName = lenderName,
         principalAmount = principalAmount,
         interestRate = interestRate,
         currencyCode = currencyCode,
         startDate = startDate,
         dueDate = dueDate,
-        status = status.name,
+        status = status,
         description = description,
         createdAt = createdAt,
         updatedAt = updatedAt

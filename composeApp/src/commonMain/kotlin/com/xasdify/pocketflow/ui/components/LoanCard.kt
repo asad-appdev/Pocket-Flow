@@ -1,10 +1,26 @@
 package com.xasdify.pocketflow.ui.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,7 +29,9 @@ import androidx.compose.ui.unit.dp
 import com.xasdify.pocketflow.loans.domain.model.Loan
 import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
-import com.xasdify.pocketflow.ui.theme.*
+import com.xasdify.pocketflow.ui.theme.DebtOrange
+import com.xasdify.pocketflow.ui.theme.ExpenseRed
+import com.xasdify.pocketflow.ui.theme.IncomeGreen
 import com.xasdify.pocketflow.utils.formatCurrency
 
 @Composable
@@ -22,8 +40,8 @@ fun LoanCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val cardColor = if (loan.type == LoanType.TAKEN) DebtOrange else IncomeGreen
-    
+    val cardColor = if (loan.type == LoanType.TAKEN.name) DebtOrange else IncomeGreen
+
     Card(
         onClick = onClick,
         modifier = modifier,
@@ -49,9 +67,9 @@ fun LoanCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = if (loan.type == LoanType.TAKEN) 
-                            Icons.Default.TrendingDown 
-                        else 
+                        imageVector = if (loan.type == LoanType.TAKEN.name)
+                            Icons.Default.TrendingDown
+                        else
                             Icons.Default.TrendingUp,
                         contentDescription = null,
                         tint = cardColor,
@@ -64,20 +82,20 @@ fun LoanCard(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                
+
                 // Status Badge
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = if (loan.status == LoanStatus.ACTIVE) 
-                        cardColor.copy(alpha = 0.1f) 
-                    else 
+                    color = if (loan.status == LoanStatus.ACTIVE.name)
+                        cardColor.copy(alpha = 0.1f)
+                    else
                         MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
-                        text = loan.status.name,
+                        text = loan.status,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (loan.status == LoanStatus.ACTIVE) cardColor else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (loan.status == LoanStatus.ACTIVE.name) cardColor else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -101,7 +119,7 @@ fun LoanCard(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                
+
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "Remaining",
@@ -141,7 +159,7 @@ fun LoanCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 if (loan.isOverdue) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(

@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.xasdify.pocketflow.loans.data.repository.LoanRepositoryImpl
 import com.xasdify.pocketflow.loans.domain.model.Loan
 import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
@@ -50,26 +52,28 @@ import com.xasdify.pocketflow.ui.theme.DebtOrangeDark
 import com.xasdify.pocketflow.ui.theme.IncomeGreen
 import com.xasdify.pocketflow.ui.theme.IncomeGreenDark
 import com.xasdify.pocketflow.utils.formatCurrency
-import com.xasdify.pocketflow.utils.getCurrentTimeMilli
-import kotlin.time.ExperimentalTime
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoansListScreen(
     onNavigateToAddLoan: () -> Unit = {},
+    onNavigateBack: () -> Unit = {},
     onNavigateToLoanDetail: (Long) -> Unit = {}
 ) {
+    val repository: LoanRepositoryImpl = koinInject()
     var selectedTab by remember { mutableStateOf(0) }
     var statusFilter by remember { mutableStateOf("All") }
 
-    // TODO: Get from ViewModel
-    val takenLoans = getSampleLoans(LoanType.TAKEN)
-    val givenLoans = getSampleLoans(LoanType.GIVEN)
+    val allLoans by repository.getAllLoans().collectAsState(initial = emptyList())
+
+    val takenLoans = allLoans.filter { it.type == LoanType.TAKEN.name }
+    val givenLoans = allLoans.filter { it.type == LoanType.GIVEN.name }
 
     val currentLoans = if (selectedTab == 0) takenLoans else givenLoans
     val filteredLoans = when (statusFilter) {
-        "Active" -> currentLoans.filter { it.status == LoanStatus.ACTIVE }
-        "Closed" -> currentLoans.filter { it.status == LoanStatus.CLOSED }
+        "Active" -> currentLoans.filter { it.status == LoanStatus.ACTIVE.name }
+        "Closed" -> currentLoans.filter { it.status == LoanStatus.CLOSED.name }
         else -> currentLoans
     }
 
@@ -196,7 +200,7 @@ private fun LoanSummaryCard(
     loans: List<Loan>,
     type: LoanType
 ) {
-    val activeLoans = loans.filter { it.status == LoanStatus.ACTIVE }
+    val activeLoans = loans.filter { it.status == LoanStatus.ACTIVE.name }
     val totalPrincipal = activeLoans.sumOf { it.principalAmount }
     val totalRemaining = activeLoans.sumOf { it.remainingBalance }
     val totalPaid = activeLoans.sumOf { it.totalPaid }
@@ -255,56 +259,3 @@ private fun LoanSummaryCard(
         }
     }
 }
-
-// Sample data for demonstration
-@OptIn(ExperimentalTime::class)
-private fun getSampleLoans(type: LoanType) = listOf(
-    Loan(
-        id = 1,
-        type = type,
-        lenderName = if (type == LoanType.TAKEN) "John Doe" else "Jane Smith",
-        principalAmount = 5000.0,
-        interestRate = 5.0,
-        currencyCode = "USD",
-        startDate = getCurrentTimeMilli() - 30L * 24 * 60 * 60 * 1000,
-        dueDate = getCurrentTimeMilli() + 335L * 24 * 60 * 60 * 1000,
-        status = LoanStatus.ACTIVE,
-        description = "Personal loan",
-        totalPaid = 1500.0,
-        remainingBalance = 3500.0,
-        createdAt = getCurrentTimeMilli(),
-        updatedAt = getCurrentTimeMilli(),
-    ),
-    Loan(
-        id = 2,
-        type = type,
-        lenderName = if (type == LoanType.TAKEN) "Bank ABC" else "Mike Johnson",
-        principalAmount = 10000.0,
-        interestRate = 7.5,
-        currencyCode = "USD",
-        startDate = getCurrentTimeMilli() - 60L * 24 * 60 * 60 * 1000,
-        dueDate = getCurrentTimeMilli() + 305L * 24 * 60 * 60 * 1000,
-        status = LoanStatus.ACTIVE,
-        description = "Business loan",
-        totalPaid = 2000.0,
-        remainingBalance = 8000.0,
-        createdAt = getCurrentTimeMilli(),
-        updatedAt = getCurrentTimeMilli()
-    ),
-    Loan(
-        id = 3,
-        type = type,
-        lenderName = if (type == LoanType.TAKEN) "Credit Union" else "Sarah Williams",
-        principalAmount = 3000.0,
-        interestRate = 4.0,
-        currencyCode = "USD",
-        startDate = getCurrentTimeMilli() - 180L * 24 * 60 * 60 * 1000,
-        dueDate = getCurrentTimeMilli() - 10L * 24 * 60 * 60 * 1000,
-        status = LoanStatus.CLOSED,
-        description = "Emergency loan",
-        totalPaid = 3000.0,
-        remainingBalance = 0.0,
-        createdAt = getCurrentTimeMilli(),
-        updatedAt = getCurrentTimeMilli()
-    )
-)

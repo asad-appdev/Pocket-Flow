@@ -45,7 +45,6 @@ kotlin {
             implementation(libs.koin.androidx.compose)
             implementation(libs.ktor.client.okhttp)
             // debugImplementation(compose.uiTooling)
-            //ksp(libs.androidx.room.compiler)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -109,3 +108,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
+
+// dependencies {
+//    ksp(libs.androidx.room.compiler)
+// }

@@ -1,8 +1,9 @@
-package com.xasdify.pocketflow.core.data.database
+package com.xasdify.pocketflow.data.local
+
 
 import androidx.room.RoomDatabaseConstructor
 
-
+@Suppress("NO_ACTUAL_FOR_EXPECT")
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }

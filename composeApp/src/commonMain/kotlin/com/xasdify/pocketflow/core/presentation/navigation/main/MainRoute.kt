@@ -13,10 +13,27 @@ sealed class MainRoute {
     @Serializable
     object Finance : MainRoute()
 
+
+
     @Serializable
     object Transactions : MainRoute()
 
     @Serializable
     object Profile : MainRoute()
+    
+    @Serializable
+    object Budget : MainRoute()
+    
+    @Serializable
+    object Loans : MainRoute()
+    
+    @Serializable
+    object AddBudget : MainRoute()
+    
+    @Serializable
+    object AddLoan : MainRoute()
+    
+    @Serializable
+    data class LoanDetail(val loanId: Long) : MainRoute()
 }
 

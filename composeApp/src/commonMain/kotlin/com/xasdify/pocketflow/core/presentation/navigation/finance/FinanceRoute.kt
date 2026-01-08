@@ -12,4 +12,7 @@ sealed class FinanceRoute() {
 
     @Serializable
     object Goals : FinanceRoute()
+
+    @Serializable
+    object AddLoan : FinanceRoute()
 }
