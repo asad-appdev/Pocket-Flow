@@ -1,4 +1,4 @@
-package com.xasdify.pocketflow.core.data.storage
+package com.xasdify.pocketflow.data.storage
 
 expect class KeyValueStore {
     fun putString(key: String, value: String)

@@ -1,9 +1,10 @@
 package com.xasdify.pocketflow.core.di
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import com.xasdify.pocketflow.core.data.database.DatabaseFactory
+
 import com.xasdify.pocketflow.core.data.network.HttpClientFactory
 import com.xasdify.pocketflow.data.local.AppDatabase
+import com.xasdify.pocketflow.data.local.DatabaseFactory
 import com.xasdify.pocketflow.data.local.dao.BackupDao
 import com.xasdify.pocketflow.data.local.dao.LoanDao
 import com.xasdify.pocketflow.data.local.dao.LoanPaymentDao
@@ -31,16 +32,17 @@ val sharedModule = module {
             .build()
     }
 
-    single<PresetDao> { get<AppDatabase>().presetDao() }
-    single<TagDao> { get<AppDatabase>().tagDao() }
-    single<BackupDao> { get<AppDatabase>().backupDao() }
 
-    single<LoanDao> { get<AppDatabase>().getLoanDao() }
-    single<LoanPaymentDao> { get<AppDatabase>().getLoanPaymentDao() }
+    single<PresetDao> { get<AppDatabase>().presetDao }
+    single<TagDao> { get<AppDatabase>().tagDao }
+    single<BackupDao> { get<AppDatabase>().backupDao } // (or backupDao() - whatever your DB exposes)
+
+    single<LoanDao> { get<AppDatabase>().getLoanDao }
+    single<LoanPaymentDao> { get<AppDatabase>().getLoanPaymentDao }
 
     singleOf(::PresetRepositoryImpl) { bind<PresetRepository>() }
     singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
-    singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
-    singleOf(::LoanRepositoryImpl) { bind<LoanRepository>() }
 
+    // single<LoanRepository> { LoanRepositoryImpl(get(), get()) }
+    singleOf(::LoanRepositoryImpl) { bind<LoanRepository>() }
 }

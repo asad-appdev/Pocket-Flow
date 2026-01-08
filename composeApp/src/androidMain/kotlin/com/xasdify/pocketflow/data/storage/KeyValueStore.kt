@@ -1,4 +1,4 @@
-package com.xasdify.pocketflow.core.data.storage
+package com.xasdify.pocketflow.data.storage
 
 import android.content.Context
 import android.content.SharedPreferences

@@ -51,7 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.xasdify.pocketflow.loans.data.repository.LoanRepositoryImpl
+import com.xasdify.pocketflow.loans.domain.LoanRepository
 import com.xasdify.pocketflow.loans.domain.model.LoanPayment
 import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
@@ -78,7 +78,7 @@ fun LoanDetailScreen(
     onEditLoan: (Long) -> Unit = {},
     onDeleteLoan: (Long) -> Unit = {}
 ) {
-    val repository: LoanRepositoryImpl = koinInject()
+    val repository: LoanRepository = koinInject()
     val scope = rememberCoroutineScope()
 
     // Load Data

@@ -1,7 +1,7 @@
 package com.xasdify.pocketflow.core.data.repository
 
-import com.xasdify.pocketflow.core.data.storage.KeyValueStore
 import com.xasdify.pocketflow.core.domain.StorageRepository
+import com.xasdify.pocketflow.data.storage.KeyValueStore
 
 class StorageRepositoryImpl(val storage: KeyValueStore) : StorageRepository {
     override suspend fun saveString(key: String, value: String) {

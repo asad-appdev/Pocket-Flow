@@ -43,11 +43,12 @@ import com.xasdify.pocketflow.transactions.data.entities.IncomeEntity
 
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun presetDao(): PresetDao
-    abstract fun tagDao(): TagDao
-    abstract fun backupDao(): BackupDao
-    abstract fun getLoanDao(): LoanDao
-    abstract fun getLoanPaymentDao(): LoanPaymentDao
+    //abstract val favoriteBookDao: FavoriteBookDao
+    abstract val presetDao: PresetDao
+    abstract val tagDao: TagDao
+    abstract val backupDao: BackupDao
+    abstract val getLoanDao: LoanDao
+    abstract val getLoanPaymentDao: LoanPaymentDao
 
     companion object {
         val DB_NAME: String = "pocketflow.db"

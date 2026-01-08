@@ -40,7 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.xasdify.pocketflow.loans.data.repository.LoanRepositoryImpl
+import com.xasdify.pocketflow.loans.domain.LoanRepository
 import com.xasdify.pocketflow.loans.domain.model.Loan
 import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
@@ -61,7 +61,8 @@ fun LoansListScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToLoanDetail: (Long) -> Unit = {}
 ) {
-    val repository: LoanRepositoryImpl = koinInject()
+    //val repository: LoanRepository = koinInject()
+    val repository = koinInject<LoanRepository>()
     var selectedTab by remember { mutableStateOf(0) }
     var statusFilter by remember { mutableStateOf("All") }
 

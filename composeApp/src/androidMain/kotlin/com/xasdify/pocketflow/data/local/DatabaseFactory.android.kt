@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 actual class DatabaseFactory(
     private val context: Context
 ) {
+
     actual fun create(): RoomDatabase.Builder<AppDatabase> {
         val appContext = context.applicationContext
         val dbFile = appContext.getDatabasePath(AppDatabase.DB_NAME)
