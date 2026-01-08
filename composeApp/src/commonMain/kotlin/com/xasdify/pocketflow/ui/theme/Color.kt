@@ -59,3 +59,42 @@ val md_theme_dark_inverseOnSurface = Color(0xFF313033)
 val md_theme_dark_inversePrimary = Color(0xFF6750A4)
 
 val seed = Color(0xFF6750A4)
+
+// Custom Money Manager Colors
+val IncomeGreen = Color(0xFF4CAF50)
+val IncomeGreenLight = Color(0xFF81C784)
+val IncomeGreenDark = Color(0xFF388E3C)
+
+val ExpenseRed = Color(0xFFEF5350)
+val ExpenseRedLight = Color(0xFFE57373)
+val ExpenseRedDark = Color(0xFFD32F2F)
+
+val BudgetBlue = Color(0xFF2196F3)
+val BudgetBlueLight = Color(0xFF64B5F6)
+val BudgetBlueDark = Color(0xFF1976D2)
+
+val GoalPurple = Color(0xFF9C27B0)
+val GoalPurpleLight = Color(0xFFBA68C8)
+val GoalPurpleDark = Color(0xFF7B1FA2)
+
+val DebtOrange = Color(0xFFFF9800)
+val DebtOrangeLight = Color(0xFFFFB74D)
+val DebtOrangeDark = Color(0xFFF57C00)
+
+// Chart Colors
+val ChartColors = listOf(
+    Color(0xFF6750A4),
+    Color(0xFF4CAF50),
+    Color(0xFFEF5350),
+    Color(0xFF2196F3),
+    Color(0xFFFF9800),
+    Color(0xFF9C27B0),
+    Color(0xFF00BCD4),
+    Color(0xFFFFEB3B),
+    Color(0xFF795548),
+    Color(0xFF607D8B)
+)
+
+// Gradient Colors
+val GradientStart = Color(0xFF6750A4)
+val GradientEnd = Color(0xFF9C27B0)
