@@ -1,3 +1,5 @@
+package com.xasdify.pocketflow.loans.presentation.add
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,43 +33,41 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.ComponentContext
-import com.xasdify.pocketflow.loans.domain.model.Loan
-import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
 import com.xasdify.pocketflow.ui.theme.DebtOrange
 import com.xasdify.pocketflow.ui.theme.IncomeGreen
-import com.xasdify.pocketflow.utils.getCurrentTimeMilli
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddLoanScreen(
-    context: ComponentContext, // Changed parameter name to match actual usage
-    onNavigateBack: () -> Unit,
-    onSave: (Loan) -> Unit = {} // Placeholder for simple injection
+    editLoanId: Long? = null,
+    onNavigateBack: () -> Unit = {}
 ) {
-    var loanType by remember { mutableStateOf(LoanType.TAKEN) }
-    var name by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var interestRate by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
-
+    val viewModel: AddLoanViewModel = koinInject { org.koin.core.parameter.parametersOf(editLoanId) }
+    val formState by viewModel.formState.collectAsState()
     val scrollState = rememberScrollState()
+
+    // Navigate back when saved
+    LaunchedEffect(formState.isSaved) {
+        if (formState.isSaved) {
+            onNavigateBack()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add New Loan") },
+                title = { Text(if (editLoanId != null) "Edit Loan" else "Add New Loan") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -96,16 +97,16 @@ fun AddLoanScreen(
             ) {
                 LoanTypeButton(
                     text = "I Borrowed",
-                    isSelected = loanType == LoanType.TAKEN,
+                    isSelected = formState.type == LoanType.TAKEN,
                     color = DebtOrange,
-                    onClick = { loanType = LoanType.TAKEN },
+                    onClick = { viewModel.updateType(LoanType.TAKEN) },
                     modifier = Modifier.weight(1f)
                 )
                 LoanTypeButton(
                     text = "I Lent",
-                    isSelected = loanType == LoanType.GIVEN,
+                    isSelected = formState.type == LoanType.GIVEN,
                     color = IncomeGreen,
-                    onClick = { loanType = LoanType.GIVEN },
+                    onClick = { viewModel.updateType(LoanType.GIVEN) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -114,40 +115,46 @@ fun AddLoanScreen(
 
             // Inputs
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text(if (loanType == LoanType.TAKEN) "Lender Name" else "Borrower Name") },
+                value = formState.lenderName,
+                onValueChange = { viewModel.updateLenderName(it) },
+                label = {
+                    Text(if (formState.type == LoanType.TAKEN) "Lender Name" else "Borrower Name")
+                },
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = showError && name.isBlank()
+                isError = formState.validationErrors.containsKey("lenderName"),
+                supportingText = formState.validationErrors["lenderName"]?.let { { Text(it) } }
             )
 
             OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
+                value = formState.principalAmount,
+                onValueChange = { viewModel.updatePrincipalAmount(it) },
                 label = { Text("Amount") },
                 leadingIcon = { Icon(Icons.Default.Money, contentDescription = null) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = showError && amount.toDoubleOrNull() == null
+                isError = formState.validationErrors.containsKey("principalAmount"),
+                supportingText = formState.validationErrors["principalAmount"]?.let { { Text(it) } }
             )
 
             OutlinedTextField(
-                value = interestRate,
-                onValueChange = { interestRate = it },
+                value = formState.interestRate,
+                onValueChange = { viewModel.updateInterestRate(it) },
                 label = { Text("Interest Rate (%)") },
                 leadingIcon = { Icon(Icons.Default.Percent, contentDescription = null) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("0.0") }
+                placeholder = { Text("0.0") },
+                isError = formState.validationErrors.containsKey("interestRate"),
+                supportingText = formState.validationErrors["interestRate"]?.let { { Text(it) } }
             )
 
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
+                value = formState.description,
+                onValueChange = { viewModel.updateDescription(it) },
                 label = { Text("Description (Optional)") },
                 leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
@@ -168,36 +175,33 @@ fun AddLoanScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // Error message
+            formState.error?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
             Button(
-                onClick = {
-                    val amountVal = amount.toDoubleOrNull()
-                    if (name.isNotBlank() && amountVal != null && amountVal > 0) {
-                        val loan = Loan(
-                            id = 0, // Auto-generated
-                            type = loanType.name,
-                            lenderName = name,
-                            principalAmount = amountVal,
-                            interestRate = interestRate.toDoubleOrNull() ?: 0.0,
-                            currencyCode = "USD",
-                            startDate = getCurrentTimeMilli(),
-                            dueDate = getCurrentTimeMilli() + 30L * 24 * 60 * 60 * 1000, // Default 30 days
-                            status = LoanStatus.ACTIVE.name,
-                            description = description,
-                            totalPaid = 0.0,
-                            remainingBalance = amountVal,
-                            createdAt = getCurrentTimeMilli(),
-                            updatedAt = getCurrentTimeMilli()
-                        )
-                        onSave(loan)
-                        onNavigateBack()
-                    } else {
-                        showError = true
-                    }
-                },
+                onClick = { viewModel.saveLoan() },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = !formState.isLoading
             ) {
-                Text("Save Loan", fontWeight = FontWeight.Bold)
+                if (formState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(
+                        if (editLoanId != null) "Update Loan" else "Save Loan",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

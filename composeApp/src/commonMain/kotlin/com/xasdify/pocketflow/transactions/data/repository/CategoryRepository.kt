@@ -1,29 +1,24 @@
 package com.xasdify.pocketflow.transactions.data.repository
 
 import com.xasdify.pocketflow.transactions.data.dao.CategoryDao
-import com.xasdify.pocketflow.transactions.domain.mapper.toDomain
-import com.xasdify.pocketflow.transactions.domain.mapper.toEntity
-import com.xasdify.pocketflow.transactions.domain.model.Category
-import com.xasdify.pocketflow.transactions.domain.repository.CategoryRepository
+import com.xasdify.pocketflow.transactions.data.entities.CategoryEntity
+import kotlinx.coroutines.flow.Flow
 
-
-class CategoryRepositoryImpl(
-    private val dao: CategoryDao
-) : CategoryRepository {
-
-    override suspend fun getAllCategories(type: String): List<Category> {
-        return dao.getCategoriesByType(type).map { it.toDomain() }
-    }
-
-    override suspend fun insertCategory(category: Category) {
-        dao.insertCategory(category.toEntity())
-    }
-
-    override suspend fun deleteCategory(id: Int) {
-        dao.deleteCategoryById(id)
-    }
-
-    override suspend fun getCategoryById(id: Int): Category? {
-        return dao.getCategoryById(id)?.toDomain()
-    }
+class CategoryRepository(
+    private val categoryDao: CategoryDao
+) {
+    fun getAllCategories(): Flow<List<CategoryEntity>> = categoryDao.getAllCategories()
+    
+    suspend fun getCategoryById(id: Int): CategoryEntity? = categoryDao.getCategoryById(id)
+    
+    fun getCategoriesByType(type: String): Flow<List<CategoryEntity>> = 
+        categoryDao.getCategoriesByType(type)
+    
+    suspend fun insertCategory(category: CategoryEntity): Long = categoryDao.insertCategory(category)
+    
+    suspend fun updateCategory(category: CategoryEntity) = categoryDao.updateCategory(category)
+    
+    suspend fun deleteCategory(category: CategoryEntity) = categoryDao.deleteCategory(category)
+    
+    suspend fun deleteCategoryById(id: Int) = categoryDao.deleteCategoryById(id)
 }

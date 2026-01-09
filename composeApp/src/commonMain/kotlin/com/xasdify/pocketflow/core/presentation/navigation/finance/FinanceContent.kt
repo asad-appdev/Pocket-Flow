@@ -1,6 +1,6 @@
 package com.xasdify.pocketflow.core.presentation.navigation.finance
 
-import AddLoanScreen
+import com.xasdify.pocketflow.loans.presentation.add.AddLoanScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -66,8 +66,7 @@ fun FinanceContent(component: FinanceComponent) {
                     is FinanceChild.Debt -> DebtScreen(c.component)
                     is FinanceChild.Goal -> GoalsScreen(c.component)
                     is FinanceChild.AddLoan -> AddLoanScreen(
-                        c.component,
-
+                        editLoanId = null,
                         onNavigateBack = { component.navigation.pop() }
                     )
                 }

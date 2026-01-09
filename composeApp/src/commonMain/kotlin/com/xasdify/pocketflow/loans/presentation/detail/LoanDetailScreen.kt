@@ -51,7 +51,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.xasdify.pocketflow.loans.domain.LoanRepository
 import com.xasdify.pocketflow.loans.domain.model.LoanPayment
 import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
@@ -64,7 +63,6 @@ import com.xasdify.pocketflow.ui.theme.IncomeGreen
 import com.xasdify.pocketflow.ui.theme.IncomeGreenDark
 import com.xasdify.pocketflow.utils.formatCurrency
 import com.xasdify.pocketflow.utils.getCurrentTimeMilli
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import kotlin.time.ExperimentalTime
 
@@ -78,15 +76,12 @@ fun LoanDetailScreen(
     onEditLoan: (Long) -> Unit = {},
     onDeleteLoan: (Long) -> Unit = {}
 ) {
-    val repository: LoanRepository = koinInject()
-    val scope = rememberCoroutineScope()
+    val viewModel: LoanDetailViewModel = koinInject { org.koin.core.parameter.parametersOf(loanId) }
+    val uiState by viewModel.uiState.collectAsState()
+    val paymentFormState by viewModel.paymentFormState.collectAsState()
 
-    // Load Data
-    val loanWithPayments by repository.getLoanWithPayments(loanId).collectAsState(initial = null)
-    val loan = loanWithPayments?.loan
-    val payments = loanWithPayments?.payments ?: emptyList()
-
-    var showPaymentDialog by remember { mutableStateOf(false) }
+    val loan = uiState.loanWithPayments?.loan
+    val payments = uiState.loanWithPayments?.payments ?: emptyList()
 
     if (loan == null) {
         // Loading or Error State
@@ -113,26 +108,18 @@ fun LoanDetailScreen(
     val cardColor = if (loan.type == LoanType.TAKEN.name) DebtOrange else IncomeGreen
 
     // Add Payment Dialog
-    if (showPaymentDialog) {
+    if (uiState.showAddPaymentDialog && loan != null) {
         AddPaymentDialog(
             loanId = loan.id,
             remainingBalance = loan.remainingBalance,
-            onDismiss = { showPaymentDialog = false },
-            onSave = { amount, date, note ->
-                scope.launch {
-                    val payment = LoanPayment(
-                        id = 0,
-                        loanId = loan.id,
-                        amount = amount,
-                        principalPortion = amount, // Simplified, assume all principal for now
-                        interestPortion = 0.0,
-                        paymentDate = date,
-                        notes = note,
-                        createdAt = getCurrentTimeMilli()
-                    )
-                    repository.addPayment(payment)
-                }
-            }
+            amount = paymentFormState.amount,
+            onAmountChange = { viewModel.updatePaymentAmount(it) },
+            notes = paymentFormState.notes,
+            onNotesChange = { viewModel.updateNotes(it) },
+            validationErrors = paymentFormState.validationErrors,
+            isProcessing = uiState.isProcessingPayment,
+            onDismiss = { viewModel.hideAddPaymentDialog() },
+            onSave = { viewModel.addPayment() }
         )
     }
 
@@ -166,7 +153,7 @@ fun LoanDetailScreen(
         floatingActionButton = {
             if (loan.status == LoanStatus.ACTIVE.name) {
                 FloatingActionButton(
-                    onClick = { showPaymentDialog = true },
+                    onClick = { viewModel.showAddPaymentDialog() },
                     containerColor = cardColor
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add Payment")
@@ -349,7 +336,7 @@ fun LoanDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { /* TODO: Close loan */ },
+                            onClick = { viewModel.closeLoan() },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = ExpenseRed
@@ -384,7 +371,7 @@ fun LoanDetailScreen(
                         title = "No Payments Yet",
                         description = "Start recording payments to track your loan progress",
                         action = {
-                            Button(onClick = { showPaymentDialog = true }) {
+                            Button(onClick = { viewModel.showAddPaymentDialog() }) {
                                 Icon(Icons.Default.Add, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Add Payment")

@@ -13,18 +13,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.xasdify.pocketflow.core.presentation.navigation.transaction.IncomeScreenComponent
+import com.xasdify.pocketflow.transactions.data.entities.IncomeEntity
 import com.xasdify.pocketflow.ui.components.*
 import com.xasdify.pocketflow.ui.theme.IncomeGreen
+import com.xasdify.pocketflow.utils.getCurrentTimeMilli
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IncomeScreen(component: IncomeScreenComponent) {
+    val repository: com.xasdify.pocketflow.transactions.data.repository.IncomeRepository = koinInject()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
     var amount by remember { mutableStateOf("") }
     var selectedSource by remember { mutableStateOf<IncomeSource?>(null) }
     var description by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf("Today") }
     var isRecurring by remember { mutableStateOf(false) }
+    var isSaving by remember { mutableStateOf(false) }
+    
+    // Validation states
+    var amountError by remember { mutableStateOf<String?>(null) }
+    var descriptionError by remember { mutableStateOf<String?>(null) }
+    var sourceError by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -44,7 +58,8 @@ fun IncomeScreen(component: IncomeScreenComponent) {
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -57,13 +72,26 @@ fun IncomeScreen(component: IncomeScreenComponent) {
 
             // Amount Input
             item {
-                AmountInput(
-                    value = amount,
-                    onValueChange = { amount = it },
-                    currencySymbol = "$",
-                    label = "Income Amount",
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column {
+                    AmountInput(
+                        value = amount,
+                        onValueChange = { 
+                            amount = it
+                            amountError = null
+                        },
+                        currencySymbol = "$",
+                        label = "Income Amount",
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    amountError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
+                }
             }
 
             // Source Selection
@@ -72,8 +100,17 @@ fun IncomeScreen(component: IncomeScreenComponent) {
                     Text(
                         text = "Income Source",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = if (sourceError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                     )
+                    sourceError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     LazyVerticalGrid(
@@ -88,7 +125,10 @@ fun IncomeScreen(component: IncomeScreenComponent) {
                                 icon = source.icon,
                                 isSelected = selectedSource == source,
                                 selectedColor = IncomeGreen,
-                                onClick = { selectedSource = source }
+                                onClick = { 
+                                    selectedSource = source
+                                    sourceError = null
+                                }
                             )
                         }
                     }
@@ -145,17 +185,31 @@ fun IncomeScreen(component: IncomeScreenComponent) {
 
             // Description
             item {
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description") },
-                    placeholder = { Text("What is this income for?") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Description, contentDescription = null)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                Column {
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { 
+                            description = it
+                            descriptionError = null
+                        },
+                        label = { Text("Description") },
+                        placeholder = { Text("What is this income for?") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Description, contentDescription = null)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        isError = descriptionError != null
+                    )
+                    descriptionError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
+                }
             }
 
             // Notes (Optional)
@@ -177,12 +231,87 @@ fun IncomeScreen(component: IncomeScreenComponent) {
             // Save Button
             item {
                 PrimaryButton(
-                    text = "Save Income",
+                    text = if (isSaving) "Saving..." else "Save Income",
                     onClick = {
-                        // TODO: Save income logic
-                        component.onBack()
+                        // Validate inputs
+                        var hasError = false
+                        
+                        // Validate amount
+                        val amountVal = amount.toDoubleOrNull()
+                        when {
+                            amount.isBlank() -> {
+                                amountError = "Amount is required"
+                                hasError = true
+                            }
+                            amountVal == null -> {
+                                amountError = "Please enter a valid number"
+                                hasError = true
+                            }
+                            amountVal <= 0 -> {
+                                amountError = "Amount must be greater than 0"
+                                hasError = true
+                            }
+                            amountVal > 999999999.99 -> {
+                                amountError = "Amount is too large"
+                                hasError = true
+                            }
+                        }
+                        
+                        // Validate description
+                        when {
+                            description.isBlank() -> {
+                                descriptionError = "Description is required"
+                                hasError = true
+                            }
+                            description.length < 3 -> {
+                                descriptionError = "Description must be at least 3 characters"
+                                hasError = true
+                            }
+                            description.length > 200 -> {
+                                descriptionError = "Description is too long (max 200 characters)"
+                                hasError = true
+                            }
+                        }
+                        
+                        // Validate source
+                        if (selectedSource == null) {
+                            sourceError = "Please select an income source"
+                            hasError = true
+                        }
+                        
+                        // If no errors, save
+                        if (!hasError) {
+                            isSaving = true
+                            scope.launch {
+                                try {
+                                    repository.insertIncome(
+                                        IncomeEntity(
+                                            title = description.trim(),
+                                            amount = amountVal!!,
+                                            category = selectedSource!!.name,
+                                            date = getCurrentTimeMilli(),
+                                            notes = notes.trim().takeIf { it.isNotBlank() }
+                                        )
+                                    )
+                                    // Show success message
+                                    snackbarHostState.showSnackbar(
+                                        message = "Income saved successfully!",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    // Navigate back
+                                    component.onBack()
+                                } catch (e: Exception) {
+                                    // Show error message
+                                    isSaving = false
+                                    snackbarHostState.showSnackbar(
+                                        message = "Failed to save income: ${e.message ?: "Unknown error"}",
+                                        duration = SnackbarDuration.Long
+                                    )
+                                }
+                            }
+                        }
                     },
-                    enabled = amount.isNotEmpty() && selectedSource != null,
+                    enabled = !isSaving,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

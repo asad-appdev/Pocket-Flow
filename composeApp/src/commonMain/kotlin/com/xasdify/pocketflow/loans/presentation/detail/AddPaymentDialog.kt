@@ -38,16 +38,15 @@ import com.xasdify.pocketflow.utils.getCurrentTimeMilli
 fun AddPaymentDialog(
     loanId: Long,
     remainingBalance: Double,
+    amount: String,
+    onAmountChange: (String) -> Unit,
+    notes: String,
+    onNotesChange: (String) -> Unit,
+    validationErrors: Map<String, String>,
+    isProcessing: Boolean,
     onDismiss: () -> Unit,
-    onSave: (amount: Double, date: Long, note: String?) -> Unit
+    onSave: () -> Unit
 ) {
-    var amount by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
-    
-    // In a real app, use a proper date picker
-    val date = remember { getCurrentTimeMilli() }
-
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
@@ -87,21 +86,16 @@ fun AddPaymentDialog(
                 // Amount
                 OutlinedTextField(
                     value = amount,
-                    onValueChange = { 
-                        amount = it 
-                        showError = false
-                    },
+                    onValueChange = onAmountChange,
                     label = { Text("Amount") },
                     placeholder = { Text("Max: $remainingBalance") },
                     leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    isError = showError,
-                    supportingText = if (showError) {
-                        { Text("Invalid amount") }
-                    } else {
-                        { Text("Remaining: $remainingBalance") }
+                    isError = validationErrors.containsKey("amount"),
+                    supportingText = {
+                        Text(validationErrors["amount"] ?: "Remaining: $remainingBalance")
                     }
                 )
 
@@ -109,8 +103,8 @@ fun AddPaymentDialog(
 
                 // Note
                 OutlinedTextField(
-                    value = note,
-                    onValueChange = { note = it },
+                    value = notes,
+                    onValueChange = onNotesChange,
                     label = { Text("Note (Optional)") },
                     leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
@@ -124,22 +118,15 @@ fun AddPaymentDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    TextButton(onClick = onDismiss, enabled = !isProcessing) {
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
-                        onClick = {
-                            val amountVal = amount.toDoubleOrNull()
-                            if (amountVal != null && amountVal > 0) {
-                                onSave(amountVal, date, note.takeIf { it.isNotBlank() })
-                                onDismiss()
-                            } else {
-                                showError = true
-                            }
-                        }
+                        onClick = onSave,
+                        enabled = !isProcessing
                     ) {
-                        Text("Save Payment")
+                        Text(if (isProcessing) "Saving..." else "Save Payment")
                     }
                 }
             }

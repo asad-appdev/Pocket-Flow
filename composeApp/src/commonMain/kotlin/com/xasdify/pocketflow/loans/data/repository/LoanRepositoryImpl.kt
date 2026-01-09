@@ -164,4 +164,10 @@ class LoanRepositoryImpl(
         // This would need a custom query in a real implementation
         return 0.0 // Placeholder
     }
+    
+    override fun getTotalLoanAmount(): Flow<Double?> {
+        return getAllLoans().map { loans ->
+            loans.sumOf { it.principalAmount }
+        }
+    }
 }

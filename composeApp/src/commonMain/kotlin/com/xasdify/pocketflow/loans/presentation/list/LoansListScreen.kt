@@ -40,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.xasdify.pocketflow.loans.domain.LoanRepository
 import com.xasdify.pocketflow.loans.domain.model.Loan
 import com.xasdify.pocketflow.loans.domain.model.LoanStatus
 import com.xasdify.pocketflow.loans.domain.model.LoanType
@@ -61,21 +60,15 @@ fun LoansListScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToLoanDetail: (Long) -> Unit = {}
 ) {
-    //val repository: LoanRepository = koinInject()
-    val repository = koinInject<LoanRepository>()
+    val viewModel: LoansListViewModel = koinInject()
+    val uiState by viewModel.uiState.collectAsState()
+    
     var selectedTab by remember { mutableStateOf(0) }
-    var statusFilter by remember { mutableStateOf("All") }
+    val currentType = if (selectedTab == 0) LoanType.TAKEN else LoanType.GIVEN
 
-    val allLoans by repository.getAllLoans().collectAsState(initial = emptyList())
-
-    val takenLoans = allLoans.filter { it.type == LoanType.TAKEN.name }
-    val givenLoans = allLoans.filter { it.type == LoanType.GIVEN.name }
-
-    val currentLoans = if (selectedTab == 0) takenLoans else givenLoans
-    val filteredLoans = when (statusFilter) {
-        "Active" -> currentLoans.filter { it.status == LoanStatus.ACTIVE.name }
-        "Closed" -> currentLoans.filter { it.status == LoanStatus.CLOSED.name }
-        else -> currentLoans
+    // Update ViewModel filter when tab changes
+    androidx.compose.runtime.LaunchedEffect(selectedTab) {
+        viewModel.filterByType(currentType)
     }
 
     Scaffold(
@@ -132,8 +125,14 @@ fun LoansListScreen(
                 // Summary Card
                 item {
                     LoanSummaryCard(
-                        loans = currentLoans,
-                        type = if (selectedTab == 0) LoanType.TAKEN else LoanType.GIVEN
+                        type = currentType,
+                        totalPrincipal = if (currentType == LoanType.TAKEN) 
+                            uiState.totalTakenAmount else uiState.totalGivenAmount,
+                        totalRemaining = if (currentType == LoanType.TAKEN) 
+                            uiState.totalTakenRemaining else uiState.totalGivenRemaining,
+                        totalPaid = uiState.loans
+                            .filter { it.type == currentType.name && it.status == LoanStatus.ACTIVE.name }
+                            .sumOf { it.totalPaid }
                     )
                 }
 
@@ -143,12 +142,16 @@ fun LoansListScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        listOf("All", "Active", "Closed").forEach { filter ->
+                        listOf(
+                            "All" to null,
+                            "Active" to LoanStatus.ACTIVE,
+                            "Closed" to LoanStatus.CLOSED
+                        ).forEach { (label, status) ->
                             FilterChip(
-                                selected = statusFilter == filter,
-                                onClick = { statusFilter = filter },
-                                label = { Text(filter) },
-                                leadingIcon = if (statusFilter == filter) {
+                                selected = uiState.selectedStatus == status,
+                                onClick = { viewModel.filterByStatus(status) },
+                                label = { Text(label) },
+                                leadingIcon = if (uiState.selectedStatus == status) {
                                     {
                                         Icon(
                                             Icons.Default.Check,
@@ -163,7 +166,7 @@ fun LoansListScreen(
                 }
 
                 // Loans List
-                if (filteredLoans.isEmpty()) {
+                if (uiState.loans.isEmpty()) {
                     item {
                         EmptyState(
                             icon = Icons.Default.AccountBalance,
@@ -182,7 +185,7 @@ fun LoansListScreen(
                         )
                     }
                 } else {
-                    items(filteredLoans) { loan ->
+                    items(uiState.loans) { loan ->
                         LoanCard(
                             loan = loan,
                             onClick = { onNavigateToLoanDetail(loan.id) }
@@ -198,14 +201,11 @@ fun LoansListScreen(
 
 @Composable
 private fun LoanSummaryCard(
-    loans: List<Loan>,
-    type: LoanType
+    type: LoanType,
+    totalPrincipal: Double,
+    totalRemaining: Double,
+    totalPaid: Double
 ) {
-    val activeLoans = loans.filter { it.status == LoanStatus.ACTIVE.name }
-    val totalPrincipal = activeLoans.sumOf { it.principalAmount }
-    val totalRemaining = activeLoans.sumOf { it.remainingBalance }
-    val totalPaid = activeLoans.sumOf { it.totalPaid }
-
     MoneyCard(
         modifier = Modifier.fillMaxWidth(),
         useGradient = true,

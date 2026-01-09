@@ -41,4 +41,6 @@ interface LoanRepository {
     suspend fun getTotalLoansByType(type: LoanType): Int
 
     suspend fun getTotalActiveLoanAmount(type: LoanType): Double
+    
+    fun getTotalLoanAmount(): Flow<Double?>
 }

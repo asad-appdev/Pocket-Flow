@@ -18,6 +18,9 @@ import com.xasdify.pocketflow.financialPlanning.data.entities.BudgetEntity
 import com.xasdify.pocketflow.financialPlanning.data.entities.DebtEntity
 import com.xasdify.pocketflow.financialPlanning.data.entities.GoalEntity
 import com.xasdify.pocketflow.profile.data.entities.UserProfileEntity
+import com.xasdify.pocketflow.transactions.data.dao.CategoryDao
+import com.xasdify.pocketflow.transactions.data.dao.ExpenseDao
+import com.xasdify.pocketflow.transactions.data.dao.IncomeDao
 import com.xasdify.pocketflow.transactions.data.entities.CategoryEntity
 import com.xasdify.pocketflow.transactions.data.entities.ExpenseEntity
 import com.xasdify.pocketflow.transactions.data.entities.IncomeEntity
@@ -48,6 +51,16 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun backupDao(): BackupDao
     abstract fun getLoanDao(): LoanDao
     abstract fun getLoanPaymentDao(): LoanPaymentDao
+    
+    // Transaction DAOs
+    abstract fun expenseDao(): ExpenseDao
+    abstract fun incomeDao(): IncomeDao
+    abstract fun categoryDao(): CategoryDao
+    
+    // Financial Planning DAOs
+    abstract fun budgetDao(): com.xasdify.pocketflow.financialPlanning.data.dao.BudgetDao
+    abstract fun debtDao(): com.xasdify.pocketflow.financialPlanning.data.dao.DebtDao
+    abstract fun goalDao(): com.xasdify.pocketflow.financialPlanning.data.dao.GoalDao
 
     companion object {
         val DB_NAME: String = "pocketflow.db"

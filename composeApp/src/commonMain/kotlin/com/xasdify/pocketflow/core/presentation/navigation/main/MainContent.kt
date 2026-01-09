@@ -1,6 +1,6 @@
 package com.xasdify.pocketflow.core.presentation.navigation.main
 
-import AddLoanScreen
+import com.xasdify.pocketflow.loans.presentation.add.AddLoanScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -112,13 +112,8 @@ fun MainContent(root: MainComponent) {
                     )
 
                     is MainChild.AddLoan -> AddLoanScreen(
-                        context = inst.component,
-                        onNavigateBack = root::onBackClicked,
-                        onSave = { loan ->
-                            scope.launch {
-                                //  loanRepository.insertLoan(loan)
-                            }
-                        }
+                        editLoanId = null, // New loan
+                        onNavigateBack = root::onBackClicked
                     )
 
                     is MainChild.LoanDetail -> LoanDetailScreen(
